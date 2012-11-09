@@ -4,5 +4,15 @@
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
-
+    <string name="problem_number">Problem number:</string>
+	<string name="problems">Problems:</string>
+	<string name="problem_description">Problem description:</string>
+	<string name="answer">Answer:</string>
+	<string name="no_answer_yet">No answer yet</string>
+	<string name="three_zeros">000</string>
+	<string name="blank"></string>
+	<string name="debug_text">Debug Text:</string>
+	<string name="run">Run</string>
+	<string name="time_taken">Time taken:</string>
+	<string name="not_run_yet">not run yet</string>
 </resources>

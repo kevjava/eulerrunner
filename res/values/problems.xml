@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="problems">
+        <item>euler001</item>
+        <item>euler002</item>
+        <item>euler003</item>
+    </string-array>
+</resources>
