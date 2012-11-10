@@ -11,12 +11,12 @@ public abstract class EulerSolution
 
 	public String getDescriptionHtml()
 	{
-		return Problems.getInstance().getDescriptionHtml(problemNumber);
+		return Problems.getInstance().getProblem(problemNumber).get(Problems.DESCRIPTION).toString();
 	}
 
-	public String getProblemDescription()
+	public String getProblemSummary()
 	{
-		return Problems.getInstance().getProblemDescription(problemNumber);
+		return Problems.getInstance().getProblem(problemNumber).get(Problems.SUMMARY).toString();
 	}
 
 	public int getProblemNumber()

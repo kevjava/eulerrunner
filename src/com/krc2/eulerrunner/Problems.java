@@ -8,22 +8,30 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
-import android.util.SparseArray;
 
 public class Problems
 {
+	public static final String DESCRIPTION = "description";
+	public static final String SUMMARY = "summary";
+	public static final String NUMBER = "number";
+	public static final String PROBLEMS = "problems";
+	
 	private static Problems instance;
-	private SparseArray<EulerProblem> problemArray;
+	private List<Map<String, Object>> problemList;
 
 	private Problems()
 	{
-		this.problemArray = new SparseArray<EulerProblem>();
+		this.problemList = new ArrayList<Map<String, Object>>();
 	}
 
 	public void loadProblems(InputStream is)
@@ -32,16 +40,17 @@ public class Problems
 		try
 		{
 			JSONObject mainObject = new JSONObject(jsonString);
-			JSONArray array = mainObject.getJSONArray("problems");
+			JSONArray array = mainObject.getJSONArray(PROBLEMS);
 			for (int i = 0; i < array.length(); i++)
 			{
 				JSONObject object = array.getJSONObject(i);
-				int problemNumber = object.getInt("number");
-				String problemSummary = object.getString("summary");
-				String problemDescriptionHtml = object.getString("description");
-				EulerProblem problem = new EulerProblem(problemNumber, problemSummary, problemDescriptionHtml);
-				Log.i("DELETEME", "Parsed problem: " + problem);
-				problemArray.put(problemNumber, problem);
+				Map<String, Object> map = new HashMap<String, Object>(); 
+				map.put(NUMBER, object.getInt(NUMBER));
+				map.put(SUMMARY, object.get(SUMMARY));
+				map.put(DESCRIPTION, object.get(DESCRIPTION));
+
+				Log.i("DELETEME", "Parsed problem: " + map);
+				problemList.add(map);
 			}
 		}
 		catch (JSONException e)
@@ -99,16 +108,34 @@ public class Problems
 		}
 		return instance;
 	}
-
-	public String getProblemDescription(int problemNumber)
+	
+	public Map<String, Object> getProblem(final int problemNumber)
 	{
-		// TODO Auto-generated method stub
+		for (Map<String, Object> problem : problemList)
+		{
+			if ((Integer)problem.get(NUMBER) == problemNumber)
+			{
+				return problem;
+			}
+		}
 		return null;
 	}
-
-	public String getDescriptionHtml(int problemNumber)
+	
+	public int getIndexOfProblem(Map<String, Object> problemToFind)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		for (int i = 0; i < problemList.size(); i++)
+		{
+			Map<String, Object> problem = problemList.get(i);
+			if ((Integer)problem.get(NUMBER) == problemToFind.get(NUMBER))
+			{
+				return i;
+			}
+		}
+		return 0;
+	}
+	
+	public List<Map<String, Object>> getProblems()
+	{
+		return problemList;
 	}
 }
