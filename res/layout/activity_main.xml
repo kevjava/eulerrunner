@@ -21,13 +21,13 @@
             android:id="@+id/problems_list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:entries="@array/problems"
-            android:fastScrollAlwaysVisible="true"
-            android:fastScrollEnabled="true"
-            android:smoothScrollbar="true"
-            android:textFilterEnabled="true" >
+            android:fastScrollEnabled="true" />
 
-        </ListView>
+        <ProgressBar
+            android:id="@+id/problems_list_view_loading"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 

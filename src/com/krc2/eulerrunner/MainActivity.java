@@ -1,9 +1,12 @@
 package com.krc2.eulerrunner;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -12,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
@@ -20,6 +24,8 @@ public class MainActivity extends Activity
 {
 
 	private Problems problems = Problems.getInstance();
+	ListAdapter problemsListViewAdapter;
+	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
 
 	@Override
@@ -27,16 +33,16 @@ public class MainActivity extends Activity
 	{
 		super.onCreate(savedInstanceState);
 
-		loadProblems();
+		problemList = new ArrayList<Map<String, Object>>();
 
 		setContentView(R.layout.activity_main);
 
-		ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
+		final ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
 		String[] from =
 		{ Problems.NUMBER, Problems.SUMMARY };
 		int[] to =
 		{ android.R.id.text1, android.R.id.text2 };
-		ListAdapter problemsListViewAdapter = new SimpleAdapter(this, problems.getProblems(), android.R.layout.simple_list_item_activated_2, from, to);
+		problemsListViewAdapter = new SimpleAdapter(this, problemList, android.R.layout.simple_list_item_activated_2, from, to);
 		problemsListView.setAdapter(problemsListViewAdapter);
 		problemsListView.setItemsCanFocus(true);
 		problemsListView.setOnItemClickListener(new OnItemClickListener()
@@ -56,6 +62,28 @@ public class MainActivity extends Activity
 				setCurrentProblemData();
 			}
 		});
+		
+		AsyncTask<Void, Void, Void> problemLoader = new AsyncTask<Void, Void, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... params)
+			{
+				loadProblems();
+				return null;
+			}
+		
+			@Override
+			protected void onPostExecute(Void result)
+			{
+				problemList.clear();
+				problemList.addAll(problems.getProblems());
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.problems_list_view_loading);
+				problemsListView.requestLayout();
+				pBar.setVisibility(View.GONE);
+			}
+		};
+		problemLoader.execute((Void[])null);
+
 	}
 
 	private void loadProblems()
