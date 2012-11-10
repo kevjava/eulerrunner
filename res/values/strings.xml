@@ -3,7 +3,7 @@
     <string name="app_name">Euler Runner</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">Euler Runner</string>
     <string name="problem_number">Problem number:</string>
 	<string name="problems">Problems:</string>
 	<string name="problem_description">Problem description:</string>
