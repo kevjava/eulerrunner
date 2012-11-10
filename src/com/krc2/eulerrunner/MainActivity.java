@@ -56,9 +56,6 @@ public class MainActivity extends Activity
 				setCurrentProblemData();
 			}
 		});
-		problemsListView.setFastScrollEnabled(true);
-		problemsListView.setFastScrollAlwaysVisible(true);
-		problemsListView.setTextFilterEnabled(true);
 	}
 
 	private void loadProblems()
