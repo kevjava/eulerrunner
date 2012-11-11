@@ -145,6 +145,14 @@
             android:layout_toLeftOf="@+id/run_button"
             android:text="@string/debug" />
 
-    </RelativeLayout>
+        <ProgressBar
+            android:id="@+id/answer_loading"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignTop="@id/debug_text"
+            android:visibility="gone" />
+        
+        </RelativeLayout>
 
 </LinearLayout>

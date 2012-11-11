@@ -49,7 +49,6 @@ public class Problems
 				map.put(SUMMARY, object.get(SUMMARY));
 				map.put(DESCRIPTION, object.get(DESCRIPTION));
 
-				Log.i("DELETEME", "Parsed problem: " + map);
 				problemList.add(map);
 			}
 		}
