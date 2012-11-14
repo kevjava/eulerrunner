@@ -30,6 +30,7 @@ public class Euler003 extends EulerSolution
 	{
 		List<Long> factors = new ArrayList<Long>();
 		boolean [] sieve = populatePrimeSieve( (int) (Math.ceil(Math.sqrt(num))) );
+		log("Done populating prime sieve.");
 		
 		long numLeft = num;
 		while (numLeft > 1)
@@ -39,6 +40,7 @@ public class Euler003 extends EulerSolution
 			factors.add(factor);
 		}
 		
+		log("Factors: %s", factors.toString());
 		return factors;
 	}
 	

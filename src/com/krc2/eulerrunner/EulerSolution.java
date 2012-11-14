@@ -7,6 +7,7 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 {
 	private int problemNumber;
 	private Context context;
+	private boolean debug;
 
 	public long getStartTime()
 	{
@@ -31,6 +32,11 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	{
 		this.context = context;
 	}
+	
+	public void setDebug(boolean debug)
+	{
+		this.debug = debug;
+	}
 
 	public String getDescriptionHtml()
 	{
@@ -52,9 +58,11 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	@Override
 	protected String doInBackground(Void... params)
 	{
+		log("Starting...");
 		startTime = System.currentTimeMillis();
 		answer = calculateAnswer();
 		endTime = System.currentTimeMillis();
+		log("Ended.");
 		return answer;
 	}
 	
@@ -89,4 +97,37 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 		// TODO Auto-generated method stub
 		return answer;
 	}
+	
+	class LogRunnable implements Runnable 
+	{
+		private Context context;
+		private String message;
+		private Object[] stuff;
+		private long timestamp;
+
+		public LogRunnable(Context context, long timestamp, String message, Object... stuff)
+		{
+			this.context = context;
+			this.message = message;
+			this.timestamp = timestamp;
+			this.stuff = stuff;
+		}
+		
+		public void run()
+		{
+			MainActivity activity = (MainActivity) context;
+			activity.addDebugText(timestamp, String.format(message, stuff) + "\n");
+		}
+	}
+	
+	public void log(String message, Object... stuff)
+	{
+		if (this.debug)
+		{   
+			long timestamp = System.currentTimeMillis();
+			MainActivity activity = (MainActivity) context;
+			activity.runOnUiThread(new LogRunnable(context, timestamp, message, stuff));
+		}
+	}
+	
 }

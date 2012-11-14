@@ -1,17 +1,9 @@
 package com.krc2.eulerrunner;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.pm.PackageStats;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -25,6 +17,12 @@ import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends Activity
 {
@@ -93,6 +91,10 @@ public class MainActivity extends Activity
 		problemLoader.execute((Void[])null);
 
 		final Button runButton = (Button) findViewById(R.id.run_button);
+		final Button debugButton = (Button) findViewById(R.id.debug_button);
+		final TextView debugText = (TextView) findViewById(R.id.debug_text);
+		final TextView timeTaken = (TextView) findViewById(R.id.time_taken);
+		
 		runButton.setOnClickListener(new OnClickListener()
 		{
 			@Override
@@ -101,8 +103,32 @@ public class MainActivity extends Activity
 				if (solution != null)
 				{
 					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 					pBar.setVisibility(View.VISIBLE);
+					solution.execute((Void[])null);
+				}
+			}
+		});
+		
+		debugButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				if (solution != null)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					
+					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setVisibility(View.VISIBLE);
+					solution.setDebug(true);
 					solution.execute((Void[])null);
 				}
 			}
@@ -146,13 +172,16 @@ public class MainActivity extends Activity
 		}
 		
 		Class<?> x = null;
-		Button button = (Button) findViewById(R.id.run_button);
+		Button runButton = (Button) findViewById(R.id.run_button);
+		Button debugButton = (Button) findViewById(R.id.debug_button);
 		try
 		{
 			x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
 			solution = (EulerSolution) x.newInstance();
 			solution.setContext(this);
-			button.setEnabled(true);
+			runButton.setEnabled(true);
+			debugButton.setEnabled(true);
+			debugText.setText("Press 'Debug' or 'Run' to execute solution code for this problem.");
 		}
 		catch (InstantiationException e)
 		{
@@ -166,7 +195,9 @@ public class MainActivity extends Activity
 		}
 		catch (ClassNotFoundException e)
 		{
-			button.setEnabled(false);
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText("No solution code found for this problem.");
 		}
 	}
 	
@@ -179,7 +210,8 @@ public class MainActivity extends Activity
 		ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 		pBar.setVisibility(View.GONE);
 		
-		Button button = (Button) findViewById(R.id.run_button);
+		Button runButton = (Button) findViewById(R.id.run_button);
+		Button debugButton = (Button) findViewById(R.id.debug_button);
 		Class<?> x = null;
 
 		String paddedNumber = String.valueOf( currentProblemMap.get(Problems.NUMBER) );
@@ -198,7 +230,8 @@ public class MainActivity extends Activity
 			x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
 			solution = (EulerSolution) x.newInstance();
 			solution.setContext(this);
-			button.setEnabled(true);
+			runButton.setEnabled(true);
+			debugButton.setEnabled(true);
 		}
 		catch (InstantiationException e)
 		{
@@ -212,7 +245,21 @@ public class MainActivity extends Activity
 		}
 		catch (ClassNotFoundException e)
 		{
-			button.setEnabled(false);
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
 		}
+	}
+	
+	public void addDebugText(long timestamp, String text)
+	{
+        Date d = new Date(timestamp);
+		String date = DateFormat.getDateFormat(this).format(d);
+        String time = DateFormat.getTimeFormat(this).format(d);
+        String ms = (new SimpleDateFormat("ss.SSS")).format(d).toString();
+		
+		String dateString = date + " " + time + ":" + ms;
+		
+		TextView debugText = (TextView) findViewById(R.id.debug_text);
+		debugText.setText(debugText.getText() + dateString + ": " + text);
 	}
 }
