@@ -144,7 +144,17 @@
             android:layout_marginRight="@dimen/padding_large"
             android:layout_toLeftOf="@+id/run_button"
             android:text="@string/debug" />
-
+		
+		<Button 
+			android:id="@+id/stop_button"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentBottom="true"
+			android:layout_marginRight="@dimen/padding_large"
+			android:layout_toLeftOf="@id/debug_button"
+			android:text="@string/stop" 
+			android:enabled="false" />
+			
         <ProgressBar
             android:id="@+id/answer_loading"
             style="?android:attr/progressBarStyleLarge"
@@ -153,6 +163,6 @@
             android:layout_alignTop="@id/debug_text"
             android:visibility="gone" />
         
-        </RelativeLayout>
+    </RelativeLayout>
 
 </LinearLayout>

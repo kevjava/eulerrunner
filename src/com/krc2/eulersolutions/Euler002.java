@@ -22,6 +22,7 @@ public class Euler002 extends EulerSolution
 		{
 			if (thisFib % 2 == 0)
 			{
+				log("Even Fibonnaci number: %d", thisFib);
 				answer += thisFib;
 			}
 			

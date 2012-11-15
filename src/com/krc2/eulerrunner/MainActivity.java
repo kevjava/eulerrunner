@@ -52,8 +52,7 @@ public class MainActivity extends Activity
 		problemsListView.setAdapter(problemsListViewAdapter);
 		problemsListView.setItemsCanFocus(true);
 		problemsListView.setOnItemClickListener(new OnItemClickListener()
-		{
-			
+		{			
 			@SuppressWarnings("unchecked")
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -92,6 +91,7 @@ public class MainActivity extends Activity
 
 		final Button runButton = (Button) findViewById(R.id.run_button);
 		final Button debugButton = (Button) findViewById(R.id.debug_button);
+		final Button stopButton = (Button) findViewById(R.id.stop_button);
 		final TextView debugText = (TextView) findViewById(R.id.debug_text);
 		final TextView timeTaken = (TextView) findViewById(R.id.time_taken);
 		
@@ -104,8 +104,10 @@ public class MainActivity extends Activity
 				{
 					runButton.setEnabled(false);
 					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
 					debugText.setText("");
 					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 					pBar.setVisibility(View.VISIBLE);
@@ -123,13 +125,62 @@ public class MainActivity extends Activity
 				{
 					runButton.setEnabled(false);
 					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
 					debugText.setText("");
 					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 					pBar.setVisibility(View.VISIBLE);
 					solution.setDebug(true);
 					solution.execute((Void[])null);
+				}
+			}
+		});
+		
+		stopButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				solution.cancel(true);
+				stopButton.setEnabled(false);
+				runButton.setEnabled(true);
+				debugButton.setEnabled(true);
+				timeTaken.setText("Canceled.");
+				problemsListView.setEnabled(true);
+				
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+				pBar.setVisibility(View.GONE);
+
+				String paddedNumber = String.valueOf( currentProblemMap.get(Problems.NUMBER) );
+				while (paddedNumber.length() < 3)
+				{
+					paddedNumber = "0" + paddedNumber;
+				}
+
+				Class<?> x = null;
+				try
+				{
+					x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
+					solution = (EulerSolution) x.newInstance();
+					solution.setContext(MainActivity.this);					
+				}
+				catch (InstantiationException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (IllegalAccessException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (ClassNotFoundException e)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					debugText.setText("No solution code found for this problem.");
 				}
 			}
 		});
@@ -180,7 +231,9 @@ public class MainActivity extends Activity
 			solution = (EulerSolution) x.newInstance();
 			solution.setContext(this);
 			runButton.setEnabled(true);
+			runButton.setText("Run");
 			debugButton.setEnabled(true);
+			debugButton.setText("Debug");
 			debugText.setText("Press 'Debug' or 'Run' to execute solution code for this problem.");
 		}
 		catch (InstantiationException e)
@@ -212,6 +265,7 @@ public class MainActivity extends Activity
 		
 		Button runButton = (Button) findViewById(R.id.run_button);
 		Button debugButton = (Button) findViewById(R.id.debug_button);
+		Button stopButton = (Button) findViewById(R.id.stop_button);
 		Class<?> x = null;
 
 		String paddedNumber = String.valueOf( currentProblemMap.get(Problems.NUMBER) );
@@ -224,6 +278,9 @@ public class MainActivity extends Activity
 		long time = solution.getEndTime() - solution.getStartTime();
 		String durationString = "" + time + " ms";
 		timeTaken.setText(durationString);
+
+		ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
+		problemsListView.setEnabled(true);
 		
 		try
 		{
@@ -232,6 +289,7 @@ public class MainActivity extends Activity
 			solution.setContext(this);
 			runButton.setEnabled(true);
 			debugButton.setEnabled(true);
+			stopButton.setEnabled(false);
 		}
 		catch (InstantiationException e)
 		{

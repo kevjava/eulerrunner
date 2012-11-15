@@ -22,7 +22,6 @@ public class Euler003 extends EulerSolution
 		List<Long> factors = getPrimeFactors(num);
 		
 		answer = factors.get(factors.size()-1);
-		
 		return String.valueOf(answer);
 	}
 
@@ -35,6 +34,7 @@ public class Euler003 extends EulerSolution
 		long numLeft = num;
 		while (numLeft > 1)
 		{
+			stopCheck();
 			long factor = getFirstPrimeFactor(sieve, numLeft);
 			numLeft /= factor;
 			factors.add(factor);
@@ -60,6 +60,7 @@ public class Euler003 extends EulerSolution
 			{
 				sieve[i*j] = false;
 			}
+			stopCheck();
 		}
 		
 		return sieve;

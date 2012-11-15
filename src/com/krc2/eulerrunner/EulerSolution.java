@@ -8,6 +8,8 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	private int problemNumber;
 	private Context context;
 	private boolean debug;
+	
+	class StoppedException extends RuntimeException{}
 
 	public long getStartTime()
 	{
@@ -56,13 +58,27 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	public abstract String calculateAnswer();
 	
 	@Override
+	protected void onCancelled(String string)
+	{
+		// Do nothing.
+	}
+	
+	@Override
 	protected String doInBackground(Void... params)
 	{
 		log("Starting...");
 		startTime = System.currentTimeMillis();
-		answer = calculateAnswer();
-		endTime = System.currentTimeMillis();
-		log("Ended.");
+		try
+		{
+			answer = calculateAnswer();
+			endTime = System.currentTimeMillis();
+			log("Ended.");
+		} 
+		catch (StoppedException e) 
+		{
+			log("Cancelled.");			
+			return "Cancelled.";
+		}
 		return answer;
 	}
 	
@@ -127,6 +143,14 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 			long timestamp = System.currentTimeMillis();
 			MainActivity activity = (MainActivity) context;
 			activity.runOnUiThread(new LogRunnable(context, timestamp, message, stuff));
+		}
+	}
+	
+	protected void stopCheck() throws StoppedException
+	{
+		if (isCancelled())
+		{
+			throw new StoppedException();
 		}
 	}
 	
