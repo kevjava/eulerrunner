@@ -318,6 +318,13 @@ public class MainActivity extends Activity
 		String dateString = date + " " + time + ":" + ms;
 		
 		TextView debugText = (TextView) findViewById(R.id.debug_text);
-		debugText.setText(debugText.getText() + dateString + ": " + text);
+		String newDebugText = debugText.getText() + dateString + ": " + text;
+		final int MAX_LEN = 10000;
+		if (newDebugText.length() > MAX_LEN)
+		{
+			int pos = newDebugText.indexOf('\n', newDebugText.length() - MAX_LEN);
+			newDebugText = newDebugText.substring(pos);
+		}
+		debugText.setText(newDebugText);
 	}
 }
