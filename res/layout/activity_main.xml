@@ -165,10 +165,17 @@
 			
         <ProgressBar
             android:id="@+id/answer_loading"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignTop="@id/debug_scrollview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/debug_button"
+			android:layout_alignParentBottom="true"
+			android:layout_toRightOf="@id/answer"
+			android:layout_toLeftOf="@id/stop_button"
+			android:layout_marginRight="@dimen/padding_large"
+			android:layout_marginLeft="@dimen/padding_large"
+			android:progress="0"
+			android:max="100"
+			style="?android:attr/progressBarStyleHorizontal"
             android:visibility="gone" />
         
     </RelativeLayout>

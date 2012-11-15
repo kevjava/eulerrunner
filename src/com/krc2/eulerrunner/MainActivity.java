@@ -172,6 +172,7 @@ public class MainActivity extends Activity
 					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setIndeterminate(true);
 					pBar.setVisibility(View.VISIBLE);
 					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
 				}
@@ -195,6 +196,7 @@ public class MainActivity extends Activity
 					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setIndeterminate(true);
 					pBar.setVisibility(View.VISIBLE);
 					solution.setDebug(true);
 					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
@@ -404,5 +406,15 @@ public class MainActivity extends Activity
 
 		ScrollView scrollView = (ScrollView) findViewById(R.id.debug_scrollview);
 		scrollView.fullScroll(View.FOCUS_DOWN);
+	}
+	
+	public void setProgressPercentage(int percentage)
+	{
+		ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+		if (pBar.isIndeterminate())
+		{
+			pBar.setIndeterminate(false);
+		}
+		pBar.setProgress(percentage);
 	}
 }

@@ -24,6 +24,7 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	private long startTime;
 	private long endTime;
 	private String answer;
+	private int progressTotal;
 
 	public EulerSolution(int problemNumber)
 	{
@@ -84,19 +85,27 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	
 	protected void setProgress(int progress)
 	{
-		// TODO
+		if (!debug)
+			return;
+		if (progressTotal > 0)
+			publishProgress(progress);
 	}
 	
 	protected void setProgressTotal(int progressTotal)
 	{
-		// TODO
+		if (!debug)
+			return;
+		this.progressTotal = progressTotal;
 	}
 	
 	@Override
 	protected void onProgressUpdate(Integer... values)
 	{
-		super.onProgressUpdate(values);
-		// TODO
+		if (progressTotal > 0)
+		{
+			MainActivity activity = (MainActivity) context;
+			activity.setProgressPercentage((100*values[0])/progressTotal);
+		}
 	}
 
 	protected void onPostExecute(String result)
