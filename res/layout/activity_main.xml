@@ -71,16 +71,23 @@
             android:layout_alignRight="@+id/run_button"
             android:layout_below="@+id/problem_description_label" />
 
-        <TextView
-            android:id="@+id/debug_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+		
+		<ScrollView
+			android:id="@+id/debug_scrollview"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
             android:layout_above="@+id/textView5"
             android:layout_alignParentLeft="true"
             android:layout_alignRight="@id/run_button"
-            android:layout_below="@+id/textView6" 
-			android:scrollbars="vertical" />
+            android:layout_below="@+id/textView6">
+			
+			<TextView
+	            android:id="@+id/debug_text"
+    	        android:layout_width="wrap_content"
+        	    android:layout_height="wrap_content" />
 
+		</ScrollView>
+		
         <TextView
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
@@ -161,7 +168,7 @@
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignTop="@id/debug_text"
+            android:layout_alignTop="@id/debug_scrollview"
             android:visibility="gone" />
         
     </RelativeLayout>

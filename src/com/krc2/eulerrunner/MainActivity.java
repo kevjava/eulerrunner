@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
@@ -33,6 +34,65 @@ public class MainActivity extends Activity
 	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
 	private String answer = null;
+	
+	class TimeTickerUpdater implements Runnable
+	{
+		private TextView view;
+		private long time;
+		
+		public TimeTickerUpdater(TextView view, long time)
+		{
+			this.view = view;
+			this.time = time;
+		}
+		@Override
+		public void run()
+		{
+			view.setText("" + (time / 1000) + " seconds");
+		}
+	}
+	
+	class TimeTicker extends AsyncTask<Long, Void, Void>
+	{
+		TextView view;
+		Activity activity;
+		
+		public TimeTicker(Activity activity, TextView view)
+		{
+			this.activity = activity;
+			this.view = view;
+		}
+		
+		@Override
+		public void onCancel()
+		{
+			
+		}
+		
+		@Override
+		public Void doInBackground(Long... params)
+		{
+			long start = params[0];
+			while (!isCancelled())
+			{
+				if (!isCancelled())
+				{
+					long time = System.currentTimeMillis() - start;
+					activity.runOnUiThread(new TimeTickerUpdater(view, time));
+				}	
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{
+					// I should probably do something here.
+				}
+			}
+			return (Void)null;
+		}
+	}
+	private TimeTicker timeTicker;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -108,10 +168,12 @@ public class MainActivity extends Activity
 					debugText.setText("");
 					timeTaken.setText("Running...");
 					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 					pBar.setVisibility(View.VISIBLE);
-					solution.execute((Void[])null);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
 				}
 			}
 		});
@@ -129,11 +191,13 @@ public class MainActivity extends Activity
 					debugText.setText("");
 					timeTaken.setText("Running...");
 					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
 					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 					pBar.setVisibility(View.VISIBLE);
 					solution.setDebug(true);
-					solution.execute((Void[])null);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
 				}
 			}
 		});
@@ -149,6 +213,10 @@ public class MainActivity extends Activity
 				debugButton.setEnabled(true);
 				timeTaken.setText("Canceled.");
 				problemsListView.setEnabled(true);
+				if (timeTicker != null)
+				{
+					timeTicker.cancel(true);
+				}
 				
 				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 				pBar.setVisibility(View.GONE);
@@ -257,6 +325,12 @@ public class MainActivity extends Activity
 	public void setAnswer(String answer)
 	{
 		this.answer  = answer;
+		
+		if (timeTicker != null)
+		{
+			timeTicker.cancel(true);
+		}
+		
 		TextView answerView = (TextView) findViewById(R.id.answer);
 		answerView.setText(answer);
 		
@@ -318,7 +392,7 @@ public class MainActivity extends Activity
 		String dateString = date + " " + time + ":" + ms;
 		
 		TextView debugText = (TextView) findViewById(R.id.debug_text);
-		String newDebugText = debugText.getText() + dateString + ": " + text;
+		String newDebugText = debugText.getText().toString();
 		final int MAX_LEN = 10000;
 		if (newDebugText.length() > MAX_LEN)
 		{
@@ -326,5 +400,9 @@ public class MainActivity extends Activity
 			newDebugText = newDebugText.substring(pos);
 		}
 		debugText.setText(newDebugText);
+		debugText.append(dateString + ": " + text);
+
+		ScrollView scrollView = (ScrollView) findViewById(R.id.debug_scrollview);
+		scrollView.fullScroll(View.FOCUS_DOWN);
 	}
 }
