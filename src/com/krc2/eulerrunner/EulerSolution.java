@@ -154,4 +154,14 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 		}
 	}
 	
+	protected void die()
+	{
+		throw new StoppedException();
+	}
+	
+	protected void die(String s, Object... stuff)
+	{
+		log(s, stuff);
+		die();
+	}
 }
