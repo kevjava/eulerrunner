@@ -15,6 +15,7 @@ public class Euler006 extends EulerSolution
 		for (int i = 1; i <= max; i++)
 		{
 			setProgress(i);
+			stopCheck();
 			sumOfSquares += (i*i);
 		}
 		log("Sum of squares: %d", sumOfSquares);
@@ -27,6 +28,7 @@ public class Euler006 extends EulerSolution
 		for (int i = 1; i <= max; i++)
 		{
 			setProgress(max+i);
+			stopCheck();
 			sum += i;
 		}
 		log("Sums: %d", sum);
