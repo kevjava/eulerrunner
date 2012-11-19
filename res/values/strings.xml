@@ -16,4 +16,6 @@
 	<string name="time_taken">Time taken:</string>
 	<string name="not_run_yet">not run yet</string>
 	<string name="debug">Debug</string>
+	<string name="stop">Stop</string>
+	
 </resources>

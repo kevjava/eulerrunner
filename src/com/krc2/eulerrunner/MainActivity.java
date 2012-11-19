@@ -1,17 +1,9 @@
 package com.krc2.eulerrunner;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.pm.PackageStats;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,9 +14,16 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends Activity
 {
@@ -35,6 +34,65 @@ public class MainActivity extends Activity
 	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
 	private String answer = null;
+	
+	class TimeTickerUpdater implements Runnable
+	{
+		private TextView view;
+		private long time;
+		
+		public TimeTickerUpdater(TextView view, long time)
+		{
+			this.view = view;
+			this.time = time;
+		}
+		@Override
+		public void run()
+		{
+			view.setText("" + (time / 1000) + " seconds");
+		}
+	}
+	
+	class TimeTicker extends AsyncTask<Long, Void, Void>
+	{
+		TextView view;
+		Activity activity;
+		
+		public TimeTicker(Activity activity, TextView view)
+		{
+			this.activity = activity;
+			this.view = view;
+		}
+		
+		@Override
+		public void onCancel()
+		{
+			
+		}
+		
+		@Override
+		public Void doInBackground(Long... params)
+		{
+			long start = params[0];
+			while (!isCancelled())
+			{
+				if (!isCancelled())
+				{
+					long time = System.currentTimeMillis() - start;
+					activity.runOnUiThread(new TimeTickerUpdater(view, time));
+				}	
+				try
+				{
+					Thread.sleep(1000);
+				}
+				catch(InterruptedException e)
+				{
+					// I should probably do something here.
+				}
+			}
+			return (Void)null;
+		}
+	}
+	private TimeTicker timeTicker;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -54,8 +112,7 @@ public class MainActivity extends Activity
 		problemsListView.setAdapter(problemsListViewAdapter);
 		problemsListView.setItemsCanFocus(true);
 		problemsListView.setOnItemClickListener(new OnItemClickListener()
-		{
-			
+		{			
 			@SuppressWarnings("unchecked")
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
@@ -93,6 +150,11 @@ public class MainActivity extends Activity
 		problemLoader.execute((Void[])null);
 
 		final Button runButton = (Button) findViewById(R.id.run_button);
+		final Button debugButton = (Button) findViewById(R.id.debug_button);
+		final Button stopButton = (Button) findViewById(R.id.stop_button);
+		final TextView debugText = (TextView) findViewById(R.id.debug_text);
+		final TextView timeTaken = (TextView) findViewById(R.id.time_taken);
+		
 		runButton.setOnClickListener(new OnClickListener()
 		{
 			@Override
@@ -101,9 +163,94 @@ public class MainActivity extends Activity
 				if (solution != null)
 				{
 					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
+					
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setIndeterminate(true);
 					pBar.setVisibility(View.VISIBLE);
-					solution.execute((Void[])null);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
+				}
+			}
+		});
+		
+		debugButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				if (solution != null)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
+					
+					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setIndeterminate(true);
+					pBar.setVisibility(View.VISIBLE);
+					solution.setDebug(true);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
+				}
+			}
+		});
+		
+		stopButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				solution.cancel(true);
+				stopButton.setEnabled(false);
+				runButton.setEnabled(true);
+				debugButton.setEnabled(true);
+				timeTaken.setText("Canceled.");
+				problemsListView.setEnabled(true);
+				if (timeTicker != null)
+				{
+					timeTicker.cancel(true);
+				}
+				
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+				pBar.setVisibility(View.GONE);
+
+				String paddedNumber = String.valueOf( currentProblemMap.get(Problems.NUMBER) );
+				while (paddedNumber.length() < 3)
+				{
+					paddedNumber = "0" + paddedNumber;
+				}
+
+				Class<?> x = null;
+				try
+				{
+					x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
+					solution = (EulerSolution) x.newInstance();
+					solution.setContext(MainActivity.this);					
+				}
+				catch (InstantiationException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (IllegalAccessException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (ClassNotFoundException e)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					debugText.setText("No solution code found for this problem.");
 				}
 			}
 		});
@@ -146,13 +293,18 @@ public class MainActivity extends Activity
 		}
 		
 		Class<?> x = null;
-		Button button = (Button) findViewById(R.id.run_button);
+		Button runButton = (Button) findViewById(R.id.run_button);
+		Button debugButton = (Button) findViewById(R.id.debug_button);
 		try
 		{
 			x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
 			solution = (EulerSolution) x.newInstance();
 			solution.setContext(this);
-			button.setEnabled(true);
+			runButton.setEnabled(true);
+			runButton.setText("Run");
+			debugButton.setEnabled(true);
+			debugButton.setText("Debug");
+			debugText.setText("Press 'Debug' or 'Run' to execute solution code for this problem.");
 		}
 		catch (InstantiationException e)
 		{
@@ -166,20 +318,30 @@ public class MainActivity extends Activity
 		}
 		catch (ClassNotFoundException e)
 		{
-			button.setEnabled(false);
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText("No solution code found for this problem.");
 		}
 	}
 	
 	public void setAnswer(String answer)
 	{
 		this.answer  = answer;
+		
+		if (timeTicker != null)
+		{
+			timeTicker.cancel(true);
+		}
+		
 		TextView answerView = (TextView) findViewById(R.id.answer);
 		answerView.setText(answer);
 		
 		ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
 		pBar.setVisibility(View.GONE);
 		
-		Button button = (Button) findViewById(R.id.run_button);
+		Button runButton = (Button) findViewById(R.id.run_button);
+		Button debugButton = (Button) findViewById(R.id.debug_button);
+		Button stopButton = (Button) findViewById(R.id.stop_button);
 		Class<?> x = null;
 
 		String paddedNumber = String.valueOf( currentProblemMap.get(Problems.NUMBER) );
@@ -192,13 +354,18 @@ public class MainActivity extends Activity
 		long time = solution.getEndTime() - solution.getStartTime();
 		String durationString = "" + time + " ms";
 		timeTaken.setText(durationString);
+
+		ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
+		problemsListView.setEnabled(true);
 		
 		try
 		{
 			x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
 			solution = (EulerSolution) x.newInstance();
 			solution.setContext(this);
-			button.setEnabled(true);
+			runButton.setEnabled(true);
+			debugButton.setEnabled(true);
+			stopButton.setEnabled(false);
 		}
 		catch (InstantiationException e)
 		{
@@ -212,7 +379,42 @@ public class MainActivity extends Activity
 		}
 		catch (ClassNotFoundException e)
 		{
-			button.setEnabled(false);
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
 		}
+	}
+	
+	public void addDebugText(long timestamp, String text)
+	{
+        Date d = new Date(timestamp);
+		String date = DateFormat.getDateFormat(this).format(d);
+        String time = DateFormat.getTimeFormat(this).format(d);
+        String ms = (new SimpleDateFormat("ss.SSS")).format(d).toString();
+		
+		String dateString = date + " " + time + ":" + ms;
+		
+		TextView debugText = (TextView) findViewById(R.id.debug_text);
+		String newDebugText = debugText.getText().toString();
+		final int MAX_LEN = 10000;
+		if (newDebugText.length() > MAX_LEN)
+		{
+			int pos = newDebugText.indexOf('\n', newDebugText.length() - MAX_LEN);
+			newDebugText = newDebugText.substring(pos);
+		}
+		debugText.setText(newDebugText);
+		debugText.append(dateString + ": " + text);
+
+		ScrollView scrollView = (ScrollView) findViewById(R.id.debug_scrollview);
+		scrollView.fullScroll(View.FOCUS_DOWN);
+	}
+	
+	public void setProgressPercentage(int percentage)
+	{
+		ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+		if (pBar.isIndeterminate())
+		{
+			pBar.setIndeterminate(false);
+		}
+		pBar.setProgress(percentage);
 	}
 }
