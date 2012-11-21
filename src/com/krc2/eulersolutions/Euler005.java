@@ -24,7 +24,7 @@ public class Euler005 extends EulerSolution
 	public String calculateAnswer()
 	{
 		int answer = 20;
-		while (1 == 1) 
+		while (true)
 		{
 			stopCheck();
 			
