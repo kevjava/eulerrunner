@@ -39,7 +39,7 @@ public class MainActivity extends Activity
 	private Map<String, Object> currentProblemMap = null;
 	SharedPreferences sharedPrefs = null;
 	private final String TAG = MainActivity.class.getSimpleName();
-	
+
 	class TimeTickerUpdater implements Runnable
 	{
 		private TextView view;
@@ -50,6 +50,7 @@ public class MainActivity extends Activity
 			this.view = view;
 			this.time = time;
 		}
+
 		@Override
 		public void run()
 		{
@@ -78,7 +79,7 @@ public class MainActivity extends Activity
 				{
 					long time = System.currentTimeMillis() - start;
 					activity.runOnUiThread(new TimeTickerUpdater(view, time));
-				}	
+				}
 				try
 				{
 					Thread.sleep(1000);
@@ -88,9 +89,10 @@ public class MainActivity extends Activity
 					// I should probably do something here.
 				}
 			}
-			return (Void)null;
+			return (Void) null;
 		}
 	}
+
 	private TimeTicker timeTicker;
 
 	@Override
@@ -113,24 +115,25 @@ public class MainActivity extends Activity
 		problemsListView.setAdapter(problemsListViewAdapter);
 		problemsListView.setItemsCanFocus(true);
 		problemsListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-			{			
-				@SuppressWarnings("unchecked")
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-				{
-					parent.dispatchSetActivated(false);
+		{
+			@SuppressWarnings("unchecked")
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+			{
+				parent.dispatchSetActivated(false);
 
-					currentProblemMap = (Map<String, Object>) parent.getItemAtPosition(position);
+				currentProblemMap = (Map<String, Object>) parent.getItemAtPosition(position);
 
-					TwoLineListItem listItem = (TwoLineListItem) view;
-					listItem.setActivated(true);
-					listItem.setSelected(true);
+				TwoLineListItem listItem = (TwoLineListItem) view;
+				listItem.setActivated(true);
+				listItem.setSelected(true);
 
-					setCurrentProblemData();
-				}
-			});
+				setCurrentProblemData();
+			}
+		});
 
-		AsyncTask<Void, Void, Void> problemLoader = new AsyncTask<Void, Void, Void>() {
+		AsyncTask<Void, Void, Void> problemLoader = new AsyncTask<Void, Void, Void>()
+		{
 
 			@Override
 			protected Void doInBackground(Void... params)
@@ -153,7 +156,7 @@ public class MainActivity extends Activity
 				{
 					Log.d(TAG, "Remembering problem.");
 					int savedProblem = sharedPrefs.getInt("pref_key_saved_problem", 0);
-					if (savedProblem >= 0) 
+					if (savedProblem >= 0)
 					{
 						Log.d(TAG, "Scrolling to saved problem " + savedProblem);
 						problemsListView.smoothScrollToPosition(savedProblem);
@@ -166,7 +169,7 @@ public class MainActivity extends Activity
 				}
 			}
 		};
-		problemLoader.execute((Void[])null);
+		problemLoader.execute((Void[]) null);
 
 		final Button runButton = (Button) findViewById(R.id.run_button);
 		final Button debugButton = (Button) findViewById(R.id.debug_button);
@@ -175,104 +178,104 @@ public class MainActivity extends Activity
 		final TextView timeTaken = (TextView) findViewById(R.id.time_taken);
 
 		runButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
 			{
-				@Override
-				public void onClick(View v)
+				if (solution != null)
 				{
-					if (solution != null)
-					{
-						runButton.setEnabled(false);
-						debugButton.setEnabled(false);
-						stopButton.setEnabled(true);
-						debugText.setText("");
-						timeTaken.setText("Running...");
-						problemsListView.setEnabled(false);
-						timeTicker = new TimeTicker(MainActivity.this, timeTaken);
-						timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
-
-						ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-						pBar.setIndeterminate(true);
-						pBar.setVisibility(View.VISIBLE);
-						solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
-					}
-				}
-			});
-
-		debugButton.setOnClickListener(new View.OnClickListener()
-			{
-				@Override
-				public void onClick(View v)
-				{
-					if (solution != null)
-					{
-						runButton.setEnabled(false);
-						debugButton.setEnabled(false);
-						stopButton.setEnabled(true);
-						debugText.setText("");
-						timeTaken.setText("Running...");
-						problemsListView.setEnabled(false);
-						timeTicker = new TimeTicker(MainActivity.this, timeTaken);
-						timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
-
-						ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-						pBar.setIndeterminate(true);
-						pBar.setVisibility(View.VISIBLE);
-						solution.setDebug(true);
-						solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
-					}
-				}
-			});
-
-		stopButton.setOnClickListener(new View.OnClickListener()
-			{
-				@Override
-				public void onClick(View v)
-				{
-					solution.cancel(true);
-					stopButton.setEnabled(false);
-					runButton.setEnabled(true);
-					debugButton.setEnabled(true);
-					timeTaken.setText("Canceled.");
-					problemsListView.setEnabled(true);
-					if (timeTicker != null)
-					{
-						timeTicker.cancel(true);
-					}
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
 
 					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-					pBar.setVisibility(View.GONE);
-
-					String paddedNumber = String.valueOf(currentProblemMap.get(Problems.NUMBER));
-					while (paddedNumber.length() < 3)
-					{
-						paddedNumber = "0" + paddedNumber;
-					}
-
-					Class<?> x = null;
-					try
-					{
-						x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
-						solution = (EulerSolution) x.newInstance();
-						solution.setContext(MainActivity.this);					
-					}
-					catch (InstantiationException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					catch (IllegalAccessException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					catch (ClassNotFoundException e)
-					{
-						runButton.setEnabled(false);
-						debugButton.setEnabled(false);
-						debugText.setText("No solution code found for this problem.");
-					}
+					pBar.setIndeterminate(true);
+					pBar.setVisibility(View.VISIBLE);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
 				}
-			});
+			}
+		});
+
+		debugButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				if (solution != null)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					stopButton.setEnabled(true);
+					debugText.setText("");
+					timeTaken.setText("Running...");
+					problemsListView.setEnabled(false);
+					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
+
+					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+					pBar.setIndeterminate(true);
+					pBar.setVisibility(View.VISIBLE);
+					solution.setDebug(true);
+					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
+				}
+			}
+		});
+
+		stopButton.setOnClickListener(new View.OnClickListener()
+		{
+			@Override
+			public void onClick(View v)
+			{
+				solution.cancel(true);
+				stopButton.setEnabled(false);
+				runButton.setEnabled(true);
+				debugButton.setEnabled(true);
+				timeTaken.setText("Canceled.");
+				problemsListView.setEnabled(true);
+				if (timeTicker != null)
+				{
+					timeTicker.cancel(true);
+				}
+
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+				pBar.setVisibility(View.GONE);
+
+				String paddedNumber = String.valueOf(currentProblemMap.get(Problems.NUMBER));
+				while (paddedNumber.length() < 3)
+				{
+					paddedNumber = "0" + paddedNumber;
+				}
+
+				Class<?> x = null;
+				try
+				{
+					x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
+					solution = (EulerSolution) x.newInstance();
+					solution.setContext(MainActivity.this);
+				}
+				catch (InstantiationException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (IllegalAccessException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (ClassNotFoundException e)
+				{
+					runButton.setEnabled(false);
+					debugButton.setEnabled(false);
+					debugText.setText("No solution code found for this problem.");
+				}
+			}
+		});
 
 	}
 
@@ -290,7 +293,7 @@ public class MainActivity extends Activity
 		int savedProblem = problemsListView.getSelectedItemPosition();
 
 		SharedPreferences.Editor editor = sharedPrefs.edit();
-		if (sharedPrefs.getBoolean("pref_key_remember_problem", true)) 
+		if (sharedPrefs.getBoolean("pref_key_remember_problem", true))
 		{
 			editor.putInt("pref_key_saved_problem", savedProblem);
 			Log.w(TAG, "Saved problem " + savedProblem);
@@ -301,7 +304,7 @@ public class MainActivity extends Activity
 			Log.w(TAG, "Clearing saved problem preference.");
 		}
 		editor.commit();
-		
+
 		super.onPause();
 	}
 
@@ -317,16 +320,16 @@ public class MainActivity extends Activity
 	{
 		switch (item.getItemId())
 		{
-			case R.id.menu_settings:
-				Intent intent = new Intent(this, SettingsActivity.class);
-				startActivity(intent);
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		case R.id.menu_settings:
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	private void setCurrentProblemData() 
+	private void setCurrentProblemData()
 	{
 		TextView problemNumberText = (TextView) findViewById(R.id.problem_number);
 		problemNumberText.setText(String.valueOf(currentProblemMap.get(Problems.NUMBER)));
@@ -441,10 +444,10 @@ public class MainActivity extends Activity
 
 	public void addDebugText(long timestamp, String text)
 	{
-        Date d = new Date(timestamp);
+		Date d = new Date(timestamp);
 		String date = DateFormat.getDateFormat(this).format(d);
-        String time = DateFormat.getTimeFormat(this).format(d);
-        String ms = (new SimpleDateFormat("ss.SSS")).format(d).toString();
+		String time = DateFormat.getTimeFormat(this).format(d);
+		String ms = (new SimpleDateFormat("ss.SSS")).format(d).toString();
 
 		String dateString = date + " " + time + ":" + ms;
 
