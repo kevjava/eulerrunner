@@ -2,6 +2,9 @@ package com.krc2.eulerrunner;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 
 public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 {
@@ -77,8 +80,19 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 		} 
 		catch (StoppedException e) 
 		{
-			log("Cancelled.");			
+			endTime = System.currentTimeMillis();
+			log("Cancelled.");
 			return "Cancelled.";
+		}
+		catch (Throwable t)
+		{
+			endTime = System.currentTimeMillis();
+			final Writer result = new StringWriter();
+			final PrintWriter printWriter = new PrintWriter(result);
+			t.printStackTrace(printWriter);
+			log( "Error: \n" + result.toString() );
+			
+			return "Error.";
 		}
 		return answer;
 	}
