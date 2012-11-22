@@ -39,7 +39,188 @@ public class MainActivity extends Activity
 	private Map<String, Object> currentProblemMap = null;
 	SharedPreferences sharedPrefs = null;
 	private final String TAG = MainActivity.class.getSimpleName();
+	private int currentPosition = -1;
 
+	/**
+	 * @author kev
+	 *
+	 */
+	private final class ProblemsListViewOnItemListClickListener implements AdapterView.OnItemClickListener
+	{
+		@SuppressWarnings("unchecked")
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+		{
+			parent.dispatchSetActivated(false);
+
+			currentPosition = position;
+			currentProblemMap = (Map<String, Object>) parent.getItemAtPosition(position);
+
+			TwoLineListItem listItem = (TwoLineListItem) view;
+			listItem.setActivated(true);
+			listItem.setSelected(true);
+
+			setCurrentProblemData();
+		}
+	}
+
+	/**
+	 * @author kev
+	 *
+	 */
+	private final class ProblemLoader extends AsyncTask<Void, Void, Void>
+	{
+		@Override
+		protected Void doInBackground(Void... params)
+		{
+			loadProblems();
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result)
+		{
+			problemList.clear();
+			problemList.addAll(problems.getProblems());
+			ProgressBar pBar = (ProgressBar) findViewById(R.id.problems_list_view_loading);
+			problemsListView.requestLayout();
+			pBar.setVisibility(View.GONE);
+
+			boolean rememberProblem = sharedPrefs.getBoolean("pref_key_remember_problem", true);
+			if (rememberProblem)
+			{
+				Log.d(TAG, "Remembering problem.");
+				currentPosition = sharedPrefs.getInt("pref_key_saved_problem", 0);
+				if (currentPosition >= 0)
+				{
+					Log.d(TAG, "Scrolling to saved problem " + currentPosition);
+					problemsListView.smoothScrollToPosition(currentPosition);
+					problemsListView.setSelection(currentPosition);
+					currentProblemMap = (Map<String, Object>) problemsListView.getItemAtPosition(currentPosition);
+					setCurrentProblemData();
+				}
+			}
+			else
+			{
+				Log.d(TAG, "Not remembering problem");
+			}
+		}
+	}
+
+	/**
+	 * @author kev
+	 *
+	 */
+	private final class StopButtonOnClickListener implements View.OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			solution.cancel(true);
+			stopButton.setEnabled(false);
+			runButton.setEnabled(true);
+			debugButton.setEnabled(true);
+			timeTaken.setText("Canceled.");
+			problemsListView.setEnabled(true);
+			if (timeTicker != null)
+			{
+				timeTicker.cancel(true);
+			}
+
+			ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+			pBar.setVisibility(View.GONE);
+
+			String paddedNumber = String.valueOf(currentProblemMap.get(Problems.NUMBER));
+			while (paddedNumber.length() < 3)
+			{
+				paddedNumber = "0" + paddedNumber;
+			}
+
+			Class<?> x = null;
+			try
+			{
+				x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
+				solution = (EulerSolution) x.newInstance();
+				solution.setContext(MainActivity.this);
+			}
+			catch (InstantiationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
+			}
+			catch (ClassNotFoundException e)
+			{
+				runButton.setEnabled(false);
+				debugButton.setEnabled(false);
+				debugText.setText("No solution code found for this problem.");
+			}
+		}
+	}
+
+	/**
+	 * @author kev
+	 *
+	 */
+	private final class DebugButtonOnClickListener implements View.OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			if (solution != null)
+			{
+				runButton.setEnabled(false);
+				debugButton.setEnabled(false);
+				stopButton.setEnabled(true);
+				debugText.setText("");
+				timeTaken.setText("Running...");
+				problemsListView.setEnabled(false);
+				timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+				timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
+
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+				pBar.setIndeterminate(true);
+				pBar.setVisibility(View.VISIBLE);
+				solution.setDebug(true);
+				solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
+			}
+		}
+	}
+
+	/**
+	 * @author kev
+	 *
+	 */
+	private final class RunButtonOnClickListener implements View.OnClickListener
+	{
+		@Override
+		public void onClick(View v)
+		{
+			if (solution != null)
+			{
+				runButton.setEnabled(false);
+				debugButton.setEnabled(false);
+				stopButton.setEnabled(true);
+				debugText.setText("");
+				timeTaken.setText("Running...");
+				problemsListView.setEnabled(false);
+				timeTicker = new TimeTicker(MainActivity.this, timeTaken);
+				timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
+
+				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
+				pBar.setIndeterminate(true);
+				pBar.setVisibility(View.VISIBLE);
+				solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
+			}
+		}
+	}
+
+	/**
+	 * @author kev
+	 *
+	 */
 	class TimeTickerUpdater implements Runnable
 	{
 		private TextView view;
@@ -58,6 +239,10 @@ public class MainActivity extends Activity
 		}
 	}
 
+	/**
+	 * @author kev
+	 *
+	 */
 	class TimeTicker extends AsyncTask<Long, Void, Void>
 	{
 		TextView view;
@@ -94,220 +279,77 @@ public class MainActivity extends Activity
 	}
 
 	private TimeTicker timeTicker;
+	private Button runButton;
+	private Button debugButton;
+	private Button stopButton;
+	private TextView debugText;
+	private TextView timeTaken;
+	private ListView problemsListView;
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 
 		sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		setContentView(R.layout.activity_main);
 
 		problemList = new ArrayList<Map<String, Object>>();
 
-		setContentView(R.layout.activity_main);
-
-		final ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
+		problemsListView = (ListView) findViewById(R.id.problems_list_view);
+		runButton = (Button) findViewById(R.id.run_button);
+		debugButton = (Button) findViewById(R.id.debug_button);
+		stopButton = (Button) findViewById(R.id.stop_button);
+		debugText = (TextView) findViewById(R.id.debug_text);
+		timeTaken = (TextView) findViewById(R.id.time_taken);
+		
 		String[] from =
 		{ Problems.NUMBER, Problems.SUMMARY };
 		int[] to =
-		{ android.R.id.text1, android.R.id.text2 };
+		{ android.R.id.text1, android.R.id.text2 };		
 		problemsListViewAdapter = new SimpleAdapter(this, problemList, android.R.layout.simple_list_item_activated_2, from, to);
 		problemsListView.setAdapter(problemsListViewAdapter);
+
 		problemsListView.setItemsCanFocus(true);
-		problemsListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-		{
-			@SuppressWarnings("unchecked")
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-			{
-				parent.dispatchSetActivated(false);
+		problemsListView.setOnItemClickListener(new ProblemsListViewOnItemListClickListener());
 
-				currentProblemMap = (Map<String, Object>) parent.getItemAtPosition(position);
-
-				TwoLineListItem listItem = (TwoLineListItem) view;
-				listItem.setActivated(true);
-				listItem.setSelected(true);
-
-				setCurrentProblemData();
-			}
-		});
-
-		AsyncTask<Void, Void, Void> problemLoader = new AsyncTask<Void, Void, Void>()
-		{
-
-			@Override
-			protected Void doInBackground(Void... params)
-			{
-				loadProblems();
-				return null;
-			}
-
-			@Override
-			protected void onPostExecute(Void result)
-			{
-				problemList.clear();
-				problemList.addAll(problems.getProblems());
-				ProgressBar pBar = (ProgressBar) findViewById(R.id.problems_list_view_loading);
-				problemsListView.requestLayout();
-				pBar.setVisibility(View.GONE);
-
-				boolean rememberProblem = sharedPrefs.getBoolean("pref_key_remember_problem", true);
-				if (rememberProblem)
-				{
-					Log.d(TAG, "Remembering problem.");
-					int savedProblem = sharedPrefs.getInt("pref_key_saved_problem", 0);
-					if (savedProblem >= 0)
-					{
-						Log.d(TAG, "Scrolling to saved problem " + savedProblem);
-						problemsListView.smoothScrollToPosition(savedProblem);
-						problemsListView.setSelection(savedProblem);
-					}
-				}
-				else
-				{
-					Log.d(TAG, "Not remembering problem");
-				}
-			}
-		};
+		AsyncTask<Void, Void, Void> problemLoader = new ProblemLoader();
 		problemLoader.execute((Void[]) null);
 
-		final Button runButton = (Button) findViewById(R.id.run_button);
-		final Button debugButton = (Button) findViewById(R.id.debug_button);
-		final Button stopButton = (Button) findViewById(R.id.stop_button);
-		final TextView debugText = (TextView) findViewById(R.id.debug_text);
-		final TextView timeTaken = (TextView) findViewById(R.id.time_taken);
 
-		runButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				if (solution != null)
-				{
-					runButton.setEnabled(false);
-					debugButton.setEnabled(false);
-					stopButton.setEnabled(true);
-					debugText.setText("");
-					timeTaken.setText("Running...");
-					problemsListView.setEnabled(false);
-					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
-					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
-
-					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-					pBar.setIndeterminate(true);
-					pBar.setVisibility(View.VISIBLE);
-					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
-				}
-			}
-		});
-
-		debugButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				if (solution != null)
-				{
-					runButton.setEnabled(false);
-					debugButton.setEnabled(false);
-					stopButton.setEnabled(true);
-					debugText.setText("");
-					timeTaken.setText("Running...");
-					problemsListView.setEnabled(false);
-					timeTicker = new TimeTicker(MainActivity.this, timeTaken);
-					timeTicker.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, System.currentTimeMillis());
-
-					ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-					pBar.setIndeterminate(true);
-					pBar.setVisibility(View.VISIBLE);
-					solution.setDebug(true);
-					solution.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[]) null);
-				}
-			}
-		});
-
-		stopButton.setOnClickListener(new View.OnClickListener()
-		{
-			@Override
-			public void onClick(View v)
-			{
-				solution.cancel(true);
-				stopButton.setEnabled(false);
-				runButton.setEnabled(true);
-				debugButton.setEnabled(true);
-				timeTaken.setText("Canceled.");
-				problemsListView.setEnabled(true);
-				if (timeTicker != null)
-				{
-					timeTicker.cancel(true);
-				}
-
-				ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
-				pBar.setVisibility(View.GONE);
-
-				String paddedNumber = String.valueOf(currentProblemMap.get(Problems.NUMBER));
-				while (paddedNumber.length() < 3)
-				{
-					paddedNumber = "0" + paddedNumber;
-				}
-
-				Class<?> x = null;
-				try
-				{
-					x = Class.forName("com.krc2.eulersolutions.Euler" + paddedNumber);
-					solution = (EulerSolution) x.newInstance();
-					solution.setContext(MainActivity.this);
-				}
-				catch (InstantiationException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch (IllegalAccessException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch (ClassNotFoundException e)
-				{
-					runButton.setEnabled(false);
-					debugButton.setEnabled(false);
-					debugText.setText("No solution code found for this problem.");
-				}
-			}
-		});
-
+		runButton.setOnClickListener(new RunButtonOnClickListener());
+		debugButton.setOnClickListener(new DebugButtonOnClickListener());
+		stopButton.setOnClickListener(new StopButtonOnClickListener());
 	}
 
-	private void loadProblems()
-	{
-		InputStream is = getResources().openRawResource(R.raw.problems);
-		problems.loadProblems(is);
-	}
-
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
 	@Override
 	protected void onPause()
 	{
 		Log.v(TAG, "Pausing.");
-		ListView problemsListView = (ListView) findViewById(R.id.problems_list_view);
-		int savedProblem = problemsListView.getSelectedItemPosition();
 
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		if (sharedPrefs.getBoolean("pref_key_remember_problem", true))
 		{
-			editor.putInt("pref_key_saved_problem", savedProblem);
-			Log.w(TAG, "Saved problem " + savedProblem);
+			editor.putInt("pref_key_saved_problem", currentPosition);
 		}
 		else
 		{
 			editor.remove("pref_key_saved_problem");
-			Log.w(TAG, "Clearing saved problem preference.");
 		}
 		editor.commit();
 
 		super.onPause();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
@@ -315,6 +357,9 @@ public class MainActivity extends Activity
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
@@ -329,6 +374,18 @@ public class MainActivity extends Activity
 		}
 	}
 
+	/**
+	 * 
+	 */
+	private void loadProblems()
+	{
+		InputStream is = getResources().openRawResource(R.raw.problems);
+		problems.loadProblems(is);
+	}
+	
+	/**
+	 * 
+	 */
 	private void setCurrentProblemData()
 	{
 		TextView problemNumberText = (TextView) findViewById(R.id.problem_number);
@@ -368,12 +425,10 @@ public class MainActivity extends Activity
 		}
 		catch (InstantiationException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IllegalAccessException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (ClassNotFoundException e)
@@ -384,6 +439,9 @@ public class MainActivity extends Activity
 		}
 	}
 
+	/**
+	 * @param answer
+	 */
 	public void setAnswer(String answer)
 	{
 		if (timeTicker != null)
@@ -427,12 +485,10 @@ public class MainActivity extends Activity
 		}
 		catch (InstantiationException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IllegalAccessException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (ClassNotFoundException e)
@@ -442,6 +498,10 @@ public class MainActivity extends Activity
 		}
 	}
 
+	/**
+	 * @param timestamp
+	 * @param text
+	 */
 	public void addDebugText(long timestamp, String text)
 	{
 		Date d = new Date(timestamp);
@@ -466,6 +526,9 @@ public class MainActivity extends Activity
 		scrollView.fullScroll(View.FOCUS_DOWN);
 	}
 
+	/**
+	 * @param percentage
+	 */
 	public void setProgressPercentage(int percentage)
 	{
 		ProgressBar pBar = (ProgressBar) findViewById(R.id.answer_loading);
