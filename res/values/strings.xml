@@ -17,5 +17,7 @@
 	<string name="not_run_yet">not run yet</string>
 	<string name="debug">Debug</string>
 	<string name="stop">Stop</string>
+	<string name="remember_problem">Remember current problem at startup</string>
+	<string name="remember_problem_summary">Remember the last selected problem, and go back there at startup.</string>
 	
 </resources>
