@@ -43,7 +43,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	private final class ProblemsListViewOnItemListClickListener implements AdapterView.OnItemClickListener
 	{
@@ -66,7 +66,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	private final class ProblemLoader extends AsyncTask<Void, Void, Void>
 	{
@@ -89,13 +89,12 @@ public class MainActivity extends Activity
 			boolean rememberProblem = sharedPrefs.getBoolean("pref_key_remember_problem", true);
 			if (rememberProblem)
 			{
-				Log.d(TAG, "Remembering problem.");
 				currentPosition = sharedPrefs.getInt("pref_key_saved_problem", 0);
 				if (currentPosition >= 0)
 				{
-					Log.d(TAG, "Scrolling to saved problem " + currentPosition);
 					problemsListView.smoothScrollToPosition(currentPosition);
 					problemsListView.setSelection(currentPosition);
+					problemsListView.setItemChecked(currentPosition, true);
 					currentProblemMap = (Map<String, Object>) problemsListView.getItemAtPosition(currentPosition);
 					setCurrentProblemData();
 				}
@@ -109,7 +108,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	private final class StopButtonOnClickListener implements View.OnClickListener
 	{
@@ -162,7 +161,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	private final class DebugButtonOnClickListener implements View.OnClickListener
 	{
@@ -191,7 +190,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	private final class RunButtonOnClickListener implements View.OnClickListener
 	{
@@ -219,7 +218,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	class TimeTickerUpdater implements Runnable
 	{
@@ -241,7 +240,7 @@ public class MainActivity extends Activity
 
 	/**
 	 * @author kev
-	 *
+	 * 
 	 */
 	class TimeTicker extends AsyncTask<Long, Void, Void>
 	{
@@ -286,7 +285,9 @@ public class MainActivity extends Activity
 	private TextView timeTaken;
 	private ListView problemsListView;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
@@ -305,27 +306,28 @@ public class MainActivity extends Activity
 		stopButton = (Button) findViewById(R.id.stop_button);
 		debugText = (TextView) findViewById(R.id.debug_text);
 		timeTaken = (TextView) findViewById(R.id.time_taken);
-		
+
 		String[] from =
 		{ Problems.NUMBER, Problems.SUMMARY };
 		int[] to =
-		{ android.R.id.text1, android.R.id.text2 };		
+		{ android.R.id.text1, android.R.id.text2 };
 		problemsListViewAdapter = new SimpleAdapter(this, problemList, android.R.layout.simple_list_item_activated_2, from, to);
 		problemsListView.setAdapter(problemsListViewAdapter);
 
 		problemsListView.setItemsCanFocus(true);
+
 		problemsListView.setOnItemClickListener(new ProblemsListViewOnItemListClickListener());
-
-		AsyncTask<Void, Void, Void> problemLoader = new ProblemLoader();
-		problemLoader.execute((Void[]) null);
-
-
 		runButton.setOnClickListener(new RunButtonOnClickListener());
 		debugButton.setOnClickListener(new DebugButtonOnClickListener());
 		stopButton.setOnClickListener(new StopButtonOnClickListener());
+
+		AsyncTask<Void, Void, Void> problemLoader = new ProblemLoader();
+		problemLoader.execute((Void[]) null);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onPause()
 	 */
 	@Override
@@ -347,7 +349,9 @@ public class MainActivity extends Activity
 		super.onPause();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
@@ -357,7 +361,9 @@ public class MainActivity extends Activity
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -382,7 +388,7 @@ public class MainActivity extends Activity
 		InputStream is = getResources().openRawResource(R.raw.problems);
 		problems.loadProblems(is);
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -394,10 +400,8 @@ public class MainActivity extends Activity
 		WebView problemDescriptionWebView = (WebView) findViewById(R.id.problemDescriptionWebView);
 		problemDescriptionWebView.loadData((String) currentProblemMap.get(Problems.DESCRIPTION), "text/html", null);
 
-		TextView debugText = (TextView) findViewById(R.id.debug_text);
 		debugText.setText("");
 
-		TextView timeTaken = (TextView) findViewById(R.id.time_taken);
 		timeTaken.setText("");
 
 		TextView answer = (TextView) findViewById(R.id.answer);
