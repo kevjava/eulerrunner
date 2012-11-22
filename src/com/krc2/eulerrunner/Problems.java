@@ -34,6 +34,8 @@ public class Problems
 
 	public void loadProblems(InputStream is)
 	{
+		problemList.clear();
+		
 		String jsonString = readInputStream(is);
 		try
 		{
