@@ -37,11 +37,8 @@ public class MainActivity extends Activity
 	ListAdapter problemsListViewAdapter;
 	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
-<<<<<<< HEAD
-=======
 	SharedPreferences sharedPrefs = null;
 	private final String TAG = MainActivity.class.getSimpleName();
->>>>>>> 1442f44a4370a332926f82ca89abeee9f727e099
 	
 	class TimeTickerUpdater implements Runnable
 	{
@@ -70,11 +67,7 @@ public class MainActivity extends Activity
 			this.activity = activity;
 			this.view = view;
 		}
-<<<<<<< HEAD
-		
-=======
 
->>>>>>> 1442f44a4370a332926f82ca89abeee9f727e099
 		@Override
 		public Void doInBackground(Long... params)
 		{
