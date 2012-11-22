@@ -33,8 +33,6 @@ public class MainActivity extends Activity
 	ListAdapter problemsListViewAdapter;
 	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
-	private String answer = null;
-	
 	class TimeTickerUpdater implements Runnable
 	{
 		private TextView view;
@@ -61,12 +59,6 @@ public class MainActivity extends Activity
 		{
 			this.activity = activity;
 			this.view = view;
-		}
-		
-		@Override
-		public void onCancel()
-		{
-			
 		}
 		
 		@Override
@@ -326,8 +318,6 @@ public class MainActivity extends Activity
 	
 	public void setAnswer(String answer)
 	{
-		this.answer  = answer;
-		
 		if (timeTicker != null)
 		{
 			timeTicker.cancel(true);
