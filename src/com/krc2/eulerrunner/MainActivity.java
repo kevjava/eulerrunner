@@ -1,5 +1,12 @@
 package com.krc2.eulerrunner;
 
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,12 +25,6 @@ import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends Activity
 {
@@ -33,7 +34,6 @@ public class MainActivity extends Activity
 	ListAdapter problemsListViewAdapter;
 	private List<Map<String, Object>> problemList;
 	private Map<String, Object> currentProblemMap = null;
-	private String answer = null;
 	
 	class TimeTickerUpdater implements Runnable
 	{
@@ -61,12 +61,6 @@ public class MainActivity extends Activity
 		{
 			this.activity = activity;
 			this.view = view;
-		}
-		
-		@Override
-		public void onCancel()
-		{
-			
 		}
 		
 		@Override
@@ -326,8 +320,6 @@ public class MainActivity extends Activity
 	
 	public void setAnswer(String answer)
 	{
-		this.answer  = answer;
-		
 		if (timeTicker != null)
 		{
 			timeTicker.cancel(true);

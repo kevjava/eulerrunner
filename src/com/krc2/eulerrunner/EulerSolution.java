@@ -9,7 +9,10 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 	private Context context;
 	private boolean debug;
 	
-	class StoppedException extends RuntimeException{}
+	class StoppedException extends RuntimeException
+	{
+		private static final long serialVersionUID = 1L;
+	}
 
 	public long getStartTime()
 	{
@@ -119,7 +122,6 @@ public abstract class EulerSolution extends AsyncTask<Void, Integer, String>
 
 	public String getAnswer()
 	{
-		// TODO Auto-generated method stub
 		return answer;
 	}
 	
