@@ -429,11 +429,15 @@ public class MainActivity extends Activity
 		}
 		catch (InstantiationException e)
 		{
-			e.printStackTrace();
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText(Log.getStackTraceString(e));
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText(Log.getStackTraceString(e));
 		}
 		catch (ClassNotFoundException e)
 		{
@@ -489,11 +493,15 @@ public class MainActivity extends Activity
 		}
 		catch (InstantiationException e)
 		{
-			e.printStackTrace();
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText(Log.getStackTraceString(e));
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			runButton.setEnabled(false);
+			debugButton.setEnabled(false);
+			debugText.setText(Log.getStackTraceString(e));
 		}
 		catch (ClassNotFoundException e)
 		{
